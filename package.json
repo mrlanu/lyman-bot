@@ -1,0 +1,24 @@
+{
+  "name": "lyman_bot",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node src/bot.ts",
+    "build": "tsc",
+    "prod": "node dist/bot.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^24.0.10",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.98.2",
+    "dotenv": "^17.0.1",
+    "grammy": "^1.37.0"
+  }
+}
