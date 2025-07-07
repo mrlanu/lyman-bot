@@ -3,7 +3,7 @@ import type SolanaWalletMonitor from '../solanaWalletMonitor';
 import type { MyContext } from '../types';
 
 export default function registerDetectWallet(bot: SolanaWalletMonitor) {
-    bot.getBot().on('message:text', async (ctx: MyContext) => {
+    bot.getBot().on('message:text', async (ctx) => {
         const text = ctx.message.text.trim();
         if (text.length >= 32 && text.length <= 44 && /^[A-Za-z0-9]+$/.test(text)) {
             try {

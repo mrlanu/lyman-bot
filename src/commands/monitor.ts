@@ -8,20 +8,20 @@ export default function registerMonitor(bot: SolanaWalletMonitor) {
         const args = ctx.message?.text?.split(' ').slice(1);
         if (!args || args.length === 0) {
             await ctx.reply(
-                '❌ Please provide a wallet address.\n\nExample: `/monitor So11111111111111111111111111111111111111112`',
+                '❌ Please provide a wallet address\\.\n\nExample: `/monitor So11111111111111111111111111111111111111112`',
                 { parse_mode: 'MarkdownV2' },
             );
             return;
         }
         const walletAddress = args.join(' ').trim();
         if (bot.isValidSolanaAddress(walletAddress)) {
-            const monitorKey = `${ctx.chat.id}_${walletAddress}`;
+            const monitorKey = `${ctx.chat!.id}_${walletAddress}`;
             if (monitors.has(monitorKey)) {
                 await ctx.reply('⚠️ This wallet is already being monitored!', { parse_mode: 'MarkdownV2' });
                 return;
             }
             monitors.set(monitorKey, {
-                chatId: ctx.chat.id,
+                chatId: ctx.chat!.id,
                 walletAddress,
             });
             if (!ctx.session.monitoredWallets.includes(walletAddress)) {

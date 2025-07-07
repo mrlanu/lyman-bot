@@ -12,8 +12,8 @@ import registerDetectWallet from './commands/detectWallet';
 import registerErrorHandler from './commands/errorHandler';
 
 class SolanaWalletMonitor {
-    private bot: Bot<MyContext>;
-    private connection: Connection;
+    private readonly bot: Bot<MyContext>;
+    private readonly connection: Connection;
     private monitors: Map<string, WalletMonitor> = new Map();
     private isRunning = false;
     private pollingInterval = 30000; // 30 seconds
@@ -46,6 +46,7 @@ class SolanaWalletMonitor {
             throw new Error('TELEGRAM_BOT_TOKEN environment variable is required');
         }
         this.bot = new Bot<MyContext>(telegramToken);
+        // Solana RPC Connection (use 'devnet' for testing or 'mainnet-beta' for real balances)
         this.connection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
         this.setupSession();
         this.setupHandlers();
@@ -189,7 +190,7 @@ class SolanaWalletMonitor {
             try {
                 await this.bot.api.sendMessage(
                     chatId,
-                    `🚨 Wallet Activity Detected\n\n${analysis.replace(/\*|\\/g, '')}\n🔗 ${solscanLink}\n⏰ ${timestamp}`,
+                    `🚨 Wallet Activity Detected\n\n${analysis.replace(/[*\\]/g, '')}\n🔗 ${solscanLink}\n⏰ ${timestamp}`,
                 );
             } catch (fallbackError) {
                 console.error('Fallback alert also failed:', fallbackError);
