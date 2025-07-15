@@ -1,24 +1,24 @@
 import {LymanBot} from "./lyman-bot";
 
-async function main() {
+const bot = new LymanBot();
 
-    const monitor = new LymanBot();
+async function main() {
 
     // Handle graceful shutdown
     process.on('SIGINT', async () => {
         console.log('\nReceived SIGINT, shutting down gracefully...');
-        await monitor.stop();
+        await bot.stop();
         process.exit(0);
     });
 
     process.on('SIGTERM', async () => {
         console.log('\nReceived SIGTERM, shutting down gracefully...');
-        await monitor.stop();
+        await bot.stop();
         process.exit(0);
     });
 
     // Start the monitoring service
-    await monitor.start();
+    await bot.start();
 }
 
 main().catch(console.error);

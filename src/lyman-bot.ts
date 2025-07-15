@@ -1,25 +1,28 @@
 import {Bot, GrammyError, HttpError} from "grammy";
 import {config} from "./config";
-import {MyContext} from "../types";
+import {MyContext} from "./types";
+import {PublicKey} from "@solana/web3.js";
+import {SubscriptionsPool} from "./subscriptions-pool";
 
 export class LymanBot {
-    private bot: Bot<MyContext>;
-    private userChats: Map<number, number>;
+    bot: Bot<MyContext>;
+
+    notifyBot = async (userId: number, message: string) => {
+        await this.bot.api.sendMessage(userId, message);
+    };
+
+    private subscriptionsPool: SubscriptionsPool = new SubscriptionsPool(this.notifyBot);
+
     constructor() {
         this.bot = new Bot(config.telegramToken);
-        this.userChats = new Map();
         this.setupCommands();
     }
 
     setupCommands() {
 
         this.bot.command('start', (ctx) => {
-            const userId = ctx.from!.id;
-            const chatId = ctx.chat.id;
 
-            this.userChats.set(userId, chatId);
-
-            ctx.reply(
+            await ctx.reply(
                 'Welcome to Solana Wallet Monitor! 🚀\n\n' +
                 'Commands:\n' +
                 '/add <wallet_address> - Add wallet to monitor\n' +
@@ -38,21 +41,21 @@ export class LymanBot {
                 return ctx.reply('Please provide a wallet address: /add <wallet_address>');
             }
 
-            try {
-                ctx.reply(`✅ Added wallet ${walletAddress} to monitoring list.`);
-            } catch (error) {
-                ctx.reply('❌ Invalid Solana wallet address format.');
+            if (this.isValidSolanaAddress(walletAddress)) {
+               await this.subscriptionsPool.addWalletToPool(walletAddress, userId);
+                await ctx.reply(`✅ Added wallet ${walletAddress} to monitoring list.`);
+            } else {
+                await ctx.reply('❌ Invalid Solana wallet address format.');
             }
         });
 
         this.bot.command('remove', async (ctx) => {
-            const userId = ctx.from!.id;
             const walletAddress = ctx.match?.trim();
 
             if (!walletAddress) {
-                return ctx.reply('Please provide a wallet address: /remove <wallet_address>');
+                return await ctx.reply('Please provide a wallet address: /remove <wallet_address>');
             }
-            ctx.reply(`✅ Removed wallet ${walletAddress} from monitoring list.`);
+            await ctx.reply(`✅ Removed wallet ${walletAddress} from monitoring list.`);
         });
 
         this.bot.command('stats', (ctx) => {
@@ -68,14 +71,12 @@ export class LymanBot {
 
         // List wallets command
         this.bot.command('list', (ctx) => {
-            const userId = ctx.from!.id;
-
-            ctx.reply(`📋 Your monitored wallets:\n\n${'...'}`);
+            await ctx.reply(`📋 Your monitored wallets:\n\n${'...'}`);
         });
 
         // Help command
         this.bot.command('help', (ctx) => {
-            ctx.reply(
+            await ctx.reply(
                 'Solana Wallet Monitor Commands:\n\n' +
                 '/add <wallet_address> - Add wallet to monitor\n' +
                 '/remove <wallet_address> - Remove wallet from monitoring\n' +
@@ -118,6 +119,15 @@ export class LymanBot {
             console.log('Bot stopped successfully!');
         } catch (error) {
             console.error('Error stopping bot:', error);
+        }
+    }
+
+    public isValidSolanaAddress(address: string): boolean {
+        try {
+            const pubKey = new PublicKey(address);
+            return PublicKey.isOnCurve(pubKey.toBuffer());
+        } catch (e) {
+            return false;
         }
     }
 }
