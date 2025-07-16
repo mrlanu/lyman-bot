@@ -10,6 +10,8 @@ export interface WSConnection {
     wallets: Set<string>;
     subscriptions: Map<any, any>;
     id: number;
+    reconnectAttempts?: number;
+    isReconnecting?: boolean;
 }
 
 // WebSocket subscription response types
